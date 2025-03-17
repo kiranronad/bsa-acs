@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -86,8 +86,10 @@ uint32_t pal_exerciser_set_param(EXERCISER_PARAM_TYPE Type, uint64_t Value1, uin
           return 0;
 
       case DMA_ATTRIBUTES:
-          pal_mmio_write(Base + DMA_BUS_ADDR,Value1);// wrting into the DMA Control Register 2
-          pal_mmio_write(Base + DMA_LEN,Value2);// writing into the DMA Control Register 3
+          /* writing into the DMA Control Register 2 */
+          pal_mmio_write64(Base + DMA_BUS_ADDR, Value1);
+          /* writing into the DMA Control Register 3 */
+          pal_mmio_write(Base + DMA_LEN, (uint32_t)Value2);
           return 0;
 
       case P2P_ATTRIBUTES:
@@ -252,8 +254,10 @@ uint32_t pal_exerciser_get_param(EXERCISER_PARAM_TYPE Type, uint64_t *Value1, ui
           *Value1 = pal_mmio_read(Base + INTXCTL);
           return pal_mmio_read(Base + INTXCTL) | MASK_BIT ;
       case DMA_ATTRIBUTES:
-          *Value1 = pal_mmio_read(Base + DMA_BUS_ADDR); // Reading the data from DMA Control Register 2
-          *Value2 = pal_mmio_read(Base + DMA_LEN); // Reading the data from DMA Control Register 3
+          /* Reading the data from DMA Control Register 2 */
+          *Value1 = pal_mmio_read64(Base + DMA_BUS_ADDR);
+          /* Reading the data from DMA Control Register 3 */
+          *Value2 = pal_mmio_read(Base + DMA_LEN);
           Temp = pal_mmio_read(Base + DMASTATUS);
           Status = Temp & MASK_BIT;// returning the DMA status
           return Status;
@@ -266,7 +270,7 @@ uint32_t pal_exerciser_get_param(EXERCISER_PARAM_TYPE Type, uint64_t *Value1, ui
           *Value1 = pal_mmio_read(Base + MSICTL);
           return pal_mmio_read(Base + MSICTL) | MASK_BIT;
       case ATS_RES_ATTRIBUTES:
-          *Value1 = pal_mmio_read(Base + ATS_ADDR);
+          *Value1 = pal_mmio_read64(Base + ATS_ADDR);
           return 0;
       case CFG_TXN_ATTRIBUTES:
       case TRANSACTION_TYPE:
@@ -423,7 +427,7 @@ uint32_t pal_exerciser_ops(EXERCISER_OPS Ops, uint64_t Param, uint32_t Bdf)
         return 0;
 
     case ATS_TXN_REQ:
-        pal_mmio_write(Base + DMA_BUS_ADDR, Param);
+        pal_mmio_write64(Base + DMA_BUS_ADDR, Param);
         pal_mmio_write(Base + ATSCTL, ATS_TRIGGER);
         return !(pal_mmio_read(Base + ATSCTL) & ATS_STATUS);
 

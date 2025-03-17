@@ -34,8 +34,14 @@
 UINT32
 pal_mmio_read(UINT64 addr);
 
+UINT64
+pal_mmio_read64(UINT64 addr);
+
 VOID
 pal_mmio_write(UINT64 addr, UINT32 data);
+
+VOID
+pal_mmio_write64(UINT64 addr, UINT32 data);
 
 UINT64
 pal_pcie_get_mcfg_ecam(UINT32 bdf);
@@ -166,7 +172,7 @@ pal_exerciser_start_dma_direction (
 /**
   @brief This function finds the PCI capability and return 0 if it finds.
 
-  @param ID    PCI capability IF 
+  @param ID    PCI capability IF
   @param Bdf   BDF value for the device
   @param Value 1 PCIE capability 0 PCI capability
   @param Offset capability offset
@@ -246,8 +252,10 @@ UINT32 pal_exerciser_set_param (
           return 0;
 
       case DMA_ATTRIBUTES:
-          pal_mmio_write(Base + DMA_BUS_ADDR,Value1);// wrting into the DMA Control Register 2
-          pal_mmio_write(Base + DMA_LEN,Value2);// writing into the DMA Control Register 3
+          /* writing into the DMA Control Register 2 */
+          pal_mmio_write64(Base + DMA_BUS_ADDR, Value1);
+          /* writing into the DMA Control Register 3 */
+          pal_mmio_write(Base + DMA_LEN, (UINT32)Value2);
           return 0;
 
       case P2P_ATTRIBUTES:
@@ -340,8 +348,10 @@ pal_exerciser_get_param (
           *Value1 = pal_mmio_read(Base + INTXCTL);
           return pal_mmio_read(Base + INTXCTL) | MASK_BIT ;
       case DMA_ATTRIBUTES:
-          *Value1 = pal_mmio_read(Base + DMA_BUS_ADDR); // Reading the data from DMA Control Register 2
-          *Value2 = pal_mmio_read(Base + DMA_LEN); // Reading the data from DMA Control Register 3
+          /* Reading the data from DMA Control Register 2 */
+          *Value1 = pal_mmio_read64(Base + DMA_BUS_ADDR);
+          /* Reading the data from DMA Control Register 3 */
+          *Value2 = pal_mmio_read(Base + DMA_LEN);
           Temp = pal_mmio_read(Base + DMASTATUS);
           Status = Temp & MASK_BIT;// returning the DMA status
           return Status;
@@ -354,7 +364,7 @@ pal_exerciser_get_param (
           *Value1 = pal_mmio_read(Base + MSICTL);
           return pal_mmio_read(Base + MSICTL) | MASK_BIT;
       case ATS_RES_ATTRIBUTES:
-          *Value1 = pal_mmio_read(Base + ATS_ADDR);
+          *Value1 = pal_mmio_read64(Base + ATS_ADDR);
           return 0;
       default:
           return 1;
@@ -487,7 +497,7 @@ pal_exerciser_ops (
         return 0;
 
     case ATS_TXN_REQ:
-        pal_mmio_write(Base + DMA_BUS_ADDR, Param);
+        pal_mmio_write64(Base + DMA_BUS_ADDR, Param);
         pal_mmio_write(Base + ATSCTL, ATS_TRIGGER);
         return !(pal_mmio_read(Base + ATSCTL) & ATS_STATUS);
 
